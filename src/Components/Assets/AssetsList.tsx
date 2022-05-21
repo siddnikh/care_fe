@@ -17,8 +17,8 @@ import loadable from "@loadable/component";
 import Pagination from "../Common/Pagination";
 import { InputSearchBox } from "../Common/SearchBox";
 import { make as SlideOver } from "../Common/SlideOver.gen";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import AssetFilter from "./AssetFilter";
+import { FacilityModel } from "../Facility/models";
 import AdvancedFilterButton from "../Common/AdvancedFilterButton";
 import { parseQueryParams } from "../../Utils/primitives";
 
@@ -32,7 +32,7 @@ interface qParamModel {
   status?: string;
 }
 
-const AssetsList = () => {
+const AssetsList = (props: any) => {
   const [qParams, setQueryParams] = useQueryParams();
   const [assets, setAssets] = useState<AssetData[]>([{}] as AssetData[]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -251,16 +251,9 @@ const AssetsList = () => {
               <dt className="text-sm leading-5 font-medium text-gray-500 truncate">
                 Total Assets
               </dt>
-              {/* Show spinner until count is fetched from server */}
-              {isLoading ? (
-                <dd className="mt-4 text-5xl leading-9">
-                  <CircularProgress className="text-primary-500" />
-                </dd>
-              ) : (
-                <dd className="mt-4 text-5xl leading-9 font-semibold text-gray-900">
-                  {totalCount}
-                </dd>
-              )}
+              <dd className="mt-4 text-5xl leading-9 font-semibold text-gray-900">
+                {totalCount}
+              </dd>
             </dl>
           </div>
         </div>

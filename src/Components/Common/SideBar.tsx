@@ -82,7 +82,7 @@ export const SideBar: React.FC<SideBarProps> = ({ isOpen, setIsOpen }) => {
     ""
   )}`;
   const path = usePath();
-  const url = path.replaceAll("/", "");
+  const url = path.split("/");
 
   const active = menus.reduce((acc, menu) => {
     const tag = menu.link.replaceAll("/", "");
@@ -147,7 +147,7 @@ export const SideBar: React.FC<SideBarProps> = ({ isOpen, setIsOpen }) => {
     >
       <div
         className={clsx(
-          "flex flex-col overflow-hidden transition-all duration-300 h-full",
+          "overflow-hidden transition-all duration-300",
           expanded ? "w-64" : "w-14"
         )}
       >
@@ -226,7 +226,7 @@ export const SideBar: React.FC<SideBarProps> = ({ isOpen, setIsOpen }) => {
 
         <div
           className={clsx(
-            "flex flex-no-wrap items-center ml-2 overflow-hidden transition-all duration-300 py-4",
+            "fixed bottom-0 flex flex-no-wrap items-center ml-2 overflow-hidden transition-all duration-300 py-4",
             expanded ? "w-60" : "w-10"
           )}
         >

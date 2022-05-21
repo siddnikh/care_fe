@@ -1,18 +1,32 @@
 import axios from "axios";
-import { Button, CircularProgress, InputLabel } from "@material-ui/core";
+import {
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  InputLabel,
+} from "@material-ui/core";
 import moment from "moment";
 import CloudUploadOutlineIcon from "@material-ui/icons/CloudUpload";
 import loadable from "@loadable/component";
-import React, { useCallback, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useState,
+  useRef,
+  ChangeEvent,
+  useEffect,
+} from "react";
 import { useDispatch } from "react-redux";
 import { statusType, useAbortableEffect } from "../../Common/utils";
 import {
   viewUpload,
   retrieveUpload,
+  retrieveUploadFilesURL,
   createUpload,
+  getUserList,
   getPatient,
 } from "../../Redux/actions";
-import { FileUploadModel } from "./models";
+import { FlowModel, FileUploadModel } from "./models";
 import { TextInputField } from "../Common/HelperInputFields";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Typography from "@material-ui/core/Typography";
@@ -20,7 +34,7 @@ import Box from "@material-ui/core/Box";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import * as Notification from "../../Utils/Notifications.js";
 import { VoiceRecorder } from "../../Utils/VoiceRecorder";
-// import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 import { Close, ZoomIn, ZoomOut } from "@material-ui/icons";
 
@@ -59,29 +73,29 @@ const ExtImage: URLS = {
   svg: "1",
 };
 
-// function getModalStyle() {
-//   const top = 100;
-//   const left = 100;
+function getModalStyle() {
+  const top = 100;
+  const left = 100;
 
-//   return {
-//     top: `${top}%`,
-//     left: `${left}%`,
-//     transform: `translate(-${top}%, -${left}%)`,
-//   };
-// }
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    transform: `translate(-${top}%, -${left}%)`,
+  };
+}
 
-// const useStyles = makeStyles((theme: Theme) =>
-//   createStyles({
-//     paper: {
-//       position: "absolute",
-//       width: "60%",
-//       backgroundColor: theme.palette.background.paper,
-//       border: "2px solid #000",
-//       boxShadow: theme.shadows[5],
-//       padding: theme.spacing(2, 4, 3),
-//     },
-//   })
-// );
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    paper: {
+      position: "absolute",
+      width: "60%",
+      backgroundColor: theme.palette.background.paper,
+      border: "2px solid #000",
+      boxShadow: theme.shadows[5],
+      padding: theme.spacing(2, 4, 3),
+    },
+  })
+);
 
 export const LinearProgressWithLabel = (props: any) => {
   return (
@@ -141,15 +155,15 @@ export const FileUpload = (props: FileUploadProps) => {
     {},
   ]);
   const [uploadStarted, setUploadStarted] = useState<boolean>(false);
-  // const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [reload, setReload] = useState<boolean>(false);
   const [uploadPercent, setUploadPercent] = useState(0);
   const [uploadFileName, setUploadFileName] = useState<string>("");
   const [url, seturl] = useState<URLS>({});
   const [fileUrl, setFileUrl] = useState("");
   const [contentType, setcontentType] = useState<string>("");
-  // const classes = useStyles();
-  // const [modalStyle] = React.useState(getModalStyle);
+  const classes = useStyles();
+  const [modalStyle] = React.useState(getModalStyle);
   const [downloadURL, setDownloadURL] = useState<string>();
   const initialState = {
     open: false,
@@ -273,7 +287,7 @@ export const FileUpload = (props: FileUploadProps) => {
   const fetchData = useCallback(
     async (status: statusType) => {
       setIsLoading(true);
-      const data = {
+      var data = {
         file_type: type,
         associating_id: getAssociatedId(),
         limit: limit,
@@ -300,12 +314,12 @@ export const FileUpload = (props: FileUploadProps) => {
     );
 
     const getURL = async (audio_files: any) => {
-      const data = { file_type: type, associating_id: getAssociatedId() };
-      const all_urls: any = {};
+      var data = { file_type: type, associating_id: getAssociatedId() };
+      let all_urls: any = {};
 
       for (const x of audio_files) {
         if (x.id) {
-          const responseData = await dispatch(retrieveUpload(data, x.id));
+          var responseData = await dispatch(retrieveUpload(data, x.id));
           all_urls[`${x.id}`] = responseData.data.read_signed_url;
         }
       }
@@ -334,8 +348,8 @@ export const FileUpload = (props: FileUploadProps) => {
   const loadFile = async (id: any) => {
     setFileUrl("");
     setFileState({ ...file_state, open: true });
-    const data = { file_type: type, associating_id: getAssociatedId() };
-    const responseData = await dispatch(retrieveUpload(data, id));
+    var data = { file_type: type, associating_id: getAssociatedId() };
+    var responseData = await dispatch(retrieveUpload(data, id));
     setFileState({
       ...file_state,
       open: true,
@@ -372,12 +386,7 @@ export const FileUpload = (props: FileUploadProps) => {
               <div>
                 {item.id ? (
                   Object.keys(url).length > 0 ? (
-                    <audio
-                      className="max-h-full max-w-full m-auto object-contain"
-                      src={url[item.id]}
-                      controls
-                      preload="auto"
-                    />
+                    <audio src={url[item.id]} controls preload="auto" />
                   ) : (
                     <CircularProgress />
                   )
@@ -423,8 +432,8 @@ export const FileUpload = (props: FileUploadProps) => {
   };
 
   const uploadfile = (response: any) => {
-    const url = response.data.signed_url;
-    const internal_name = response.data.internal_name;
+    var url = response.data.signed_url;
+    var internal_name = response.data.internal_name;
     const f = file;
     if (f === undefined) return;
     const newFile = new File([f], `${internal_name}`);
@@ -435,7 +444,7 @@ export const FileUpload = (props: FileUploadProps) => {
         "Content-disposition": "inline",
       },
       onUploadProgress: (progressEvent: any) => {
-        const percentCompleted = Math.round(
+        var percentCompleted = Math.round(
           (progressEvent.loaded * 100) / progressEvent.total
         );
         setUploadPercent(percentCompleted);
@@ -443,28 +452,28 @@ export const FileUpload = (props: FileUploadProps) => {
     };
     axios
       .put(url, newFile, config)
-      .then(() => {
+      .then((result) => {
         setUploadStarted(false);
-        // setUploadSuccess(true);
+        setUploadSuccess(true);
         setUploadFileName("");
         setReload(!reload);
         Notification.Success({
           msg: "File Uploaded Successfully",
         });
       })
-      .catch(() => {
+      .catch((error) => {
         setUploadStarted(false);
       });
   };
 
-  const handleUpload = async () => {
+  const handleUpload = async (e: any) => {
     const f = file;
     if (f === undefined) return;
     const category = "UNSPECIFIED";
     const filename = uploadFileName;
-    const name = f.name;
+    let name = f.name;
     setUploadStarted(true);
-    // setUploadSuccess(false);
+    setUploadSuccess(false);
     const requestData = {
       original_name: name,
       file_type: type,
@@ -484,7 +493,7 @@ export const FileUpload = (props: FileUploadProps) => {
   };
 
   const uploadAudiofile = (response: any) => {
-    const url = response.data.signed_url;
+    var url = response.data.signed_url;
     const internal_name = response.data.internal_name;
     const f = audioBlob;
     if (f === undefined) return;
@@ -492,7 +501,7 @@ export const FileUpload = (props: FileUploadProps) => {
 
     const config = {
       onUploadProgress: (progressEvent: any) => {
-        const percentCompleted = Math.round(
+        var percentCompleted = Math.round(
           (progressEvent.loaded * 100) / progressEvent.total
         );
         setUploadPercent(percentCompleted);
@@ -501,28 +510,28 @@ export const FileUpload = (props: FileUploadProps) => {
 
     axios
       .put(url, newFile, config)
-      .then(() => {
+      .then((result) => {
         setUploadStarted(false);
-        // setUploadSuccess(true);
+        setUploadSuccess(true);
         setUploadFileName("");
         setReload(!reload);
         Notification.Success({
           msg: "File Uploaded Successfully",
         });
       })
-      .catch(() => {
+      .catch((error) => {
         setUploadStarted(false);
       });
   };
 
-  const handleAudioUpload = async () => {
+  const handleAudioUpload = async (e: any) => {
     const f = audioBlob;
     if (f === undefined) return;
     const category = "AUDIO";
     const filename = Date.now().toString();
-    const name = "audio.mp3";
+    let name = "audio.mp3";
     setUploadStarted(true);
-    // setUploadSuccess(false);
+    setUploadSuccess(false);
     const requestData = {
       original_name: name,
       file_type: type,
@@ -665,12 +674,12 @@ export const FileUpload = (props: FileUploadProps) => {
                   color="primary"
                   variant="contained"
                   type="submit"
-                  style={{ marginLeft: "auto" }}
+                  style={{ marginLeft: "auto", float: "left" }}
                   startIcon={
                     <CloudUploadOutlineIcon>save</CloudUploadOutlineIcon>
                   }
-                  onClick={() => {
-                    handleAudioUpload();
+                  onClick={(e: any) => {
+                    handleAudioUpload(e);
                   }}
                 >
                   Save Recording
@@ -717,8 +726,8 @@ export const FileUpload = (props: FileUploadProps) => {
                         startIcon={
                           <CloudUploadOutlineIcon>save</CloudUploadOutlineIcon>
                         }
-                        onClick={() => {
-                          handleUpload();
+                        onClick={(e: any) => {
+                          handleUpload(e);
                         }}
                       >
                         Upload

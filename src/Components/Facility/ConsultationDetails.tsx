@@ -150,7 +150,7 @@ export const ConsultationDetails = (props: any) => {
         setIsLoading(false);
       }
     },
-    [consultationId, dispatch, patientData.is_vaccinated]
+    [consultationId, dispatch]
   );
 
   useAbortableEffect((status: statusType) => {
@@ -171,29 +171,28 @@ export const ConsultationDetails = (props: any) => {
       <div className="px-2 pb-2">
         <nav className="flex justify-between flex-wrap">
           <PageTitle
-            title="Patient Dashboard"
+            title="Patient Details"
             className="sm:m-0 sm:p-0"
             breadcrumbs={true}
           />
+
           <div className="flex items-start justify-start sm:flex-row sm:items-center flex-col space-y-1 sm:space-y-0 sm:divide-x-2">
-            {patientData.is_active && (
-              <div className="px-2">
-                <button
-                  onClick={() => setShowDoctors(true)}
+            <div className="px-2">
+              <button
+                onClick={() => setShowDoctors(true)}
+                className="btn m-1 btn-primary hover:text-white"
+              >
+                Doctor Video
+              </button>
+              {patientData.last_consultation?.id && (
+                <Link
+                  href={`/facility/${patientData.facility}/patient/${patientData.id}/consultation/${patientData.last_consultation?.id}/feed`}
                   className="btn m-1 btn-primary hover:text-white"
                 >
-                  Doctor Video
-                </button>
-                {patientData.last_consultation?.id && (
-                  <Link
-                    href={`/facility/${patientData.facility}/patient/${patientData.id}/consultation/${patientData.last_consultation?.id}/feed`}
-                    className="btn m-1 btn-primary hover:text-white"
-                  >
-                    Camera Feed
-                  </Link>
-                )}
-              </div>
-            )}
+                  Camera Feed
+                </Link>
+              )}
+            </div>
             <div className="px-2">
               <Link
                 href={`/facility/${patientData.facility}/patient/${patientData.id}`}
@@ -202,7 +201,7 @@ export const ConsultationDetails = (props: any) => {
                 Patient Details
               </Link>
               <Link
-                href={`/facility/${patientData.facility}/patient/${patientData.id}/notes`}
+                href={`/facility/${patientData.facility}/patient/${patientData.id}/notes/`}
                 className="btn m-1 btn-primary hover:text-white"
               >
                 Doctor&apos;s Notes
@@ -290,6 +289,15 @@ export const ConsultationDetails = (props: any) => {
             </div>
 
             <div className="mt-2">
+              {consultationData.other_symptoms && (
+                <div className="capitalize">
+                  <span className="font-semibold leading-relaxed">
+                    Other Symptoms:{" "}
+                  </span>
+                  {consultationData.other_symptoms}
+                </div>
+              )}
+
               {consultationData.diagnosis && (
                 <div className="text-sm w-full">
                   <span className="font-semibold leading-relaxed">
@@ -355,14 +363,6 @@ export const ConsultationDetails = (props: any) => {
                       <div className="capitalize">
                         {consultationData.symptoms_text || "-"}
                       </div>
-                      {consultationData.other_symptoms && (
-                        <div className="capitalize">
-                          <span className="font-semibold leading-relaxed">
-                            Other Symptoms:{" "}
-                          </span>
-                          {consultationData.other_symptoms}
-                        </div>
-                      )}
                       <span className="font-semibold leading-relaxed text-gray-800 text-xs">
                         from{" "}
                         {moment(consultationData.symptoms_onset_date).format(
@@ -496,8 +496,8 @@ export const ConsultationDetails = (props: any) => {
                       Lines and Catheters
                     </h3>
                     <div className="mt-2 grid gap-4 grid-cols-1 md:grid-cols-2">
-                      {consultationData.lines?.map((line: any, idx: number) => (
-                        <div key={idx} className="mt-4">
+                      {consultationData.lines?.map((line: any, i: number) => (
+                        <div className="mt-4" key={i}>
                           <h5>{line.type}</h5>
                           <p className="text-justify break-word">
                             Details:

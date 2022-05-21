@@ -101,34 +101,27 @@ let makePayload = (state: VentilatorParameters.state) => {
   DictUtils.setOptionalNumber("ventilator_tidal_volume", state.ventilator_tidal_volume, payload)
   DictUtils.setOptionalNumber(
     "ventilator_oxygen_modality_oxygen_rate",
-    state.ventilator_interface === UNKNOWN &&
-      state.ventilator_oxygen_modality !== HIGH_FLOW_NASAL_CANNULA
-      ? state.ventilator_oxygen_modality_oxygen_rate
-      : None,
+    state.ventilator_oxygen_modality_oxygen_rate,
     payload,
   )
   DictUtils.setOptionalNumber(
     "ventilator_oxygen_modality_flow_rate",
-    state.ventilator_oxygen_modality === HIGH_FLOW_NASAL_CANNULA
-      ? state.ventilator_oxygen_modality_flow_rate
-      : None,
+    state.ventilator_oxygen_modality_flow_rate,
     payload,
   )
   DictUtils.setOptionalNumber(
-    "ventilator_fi02",
-    state.ventilator_oxygen_modality === HIGH_FLOW_NASAL_CANNULA ||
-    state.ventilator_interface === INVASIVE ||
-    state.ventilator_interface === NON_INVASIVE
-      ? state.ventilator_fi02
-      : None,
-    payload,
+    "ventilator_fi02", 
+    state.ventilator_oxygen_modality === HIGH_FLOW_NASAL_CANNULA || 
+    state.ventilator_interface === INVASIVE || 
+    state.ventilator_interface === NON_INVASIVE ? state.ventilator_fi02 : None, 
+    payload
   )
   DictUtils.setOptionalNumber("ventilator_spo2", state.ventilator_spo2, payload)
 
   payload
 }
 
-let successCB = (_send, updateCB, data) => {
+let successCB = (send, updateCB, data) => {
   updateCB(CriticalCare__DailyRound.makeFromJs(data))
 }
 

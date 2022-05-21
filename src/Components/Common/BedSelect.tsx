@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
 import { listFacilityBeds } from "../../Redux/actions";
 import { AutoCompleteAsyncField } from "../Common/HelperInputFields";
@@ -34,45 +34,50 @@ export const BedSelect = (props: BedSelectProps) => {
   } = props;
   const dispatchAction: any = useDispatch();
   const [bedLoading, isBedLoading] = useState(false);
+  const [hasSearchText, setHasSearchText] = useState(false);
   const [bedList, setBedList] = useState<Array<BedModel>>([]);
 
   const handleValueChange = (current: BedModel | BedModel[] | null) => {
     if (!current) {
       setBedList([]);
       isBedLoading(false);
+      setHasSearchText(false);
     }
     setSelected(current);
   };
 
   const handelSearch = (e: any) => {
     isBedLoading(true);
+    setHasSearchText(!!e.target.value);
     onBedSearch(e.target.value);
   };
 
   const onBedSearch = useCallback(
     debounce(async (text: string) => {
-      const params = {
-        limit: 50,
-        offset: 0,
-        search_text: text,
-        all: searchAll,
-        facility,
-        location,
-      };
+      if (text) {
+        const params = {
+          limit: 50,
+          offset: 0,
+          search_text: text,
+          all: searchAll,
+          facility,
+          location,
+        };
 
-      const res = await dispatchAction(listFacilityBeds(params));
-      if (res && res.data) {
-        setBedList(res.data.results);
-        console.log(res.data.results);
+        const res = await dispatchAction(listFacilityBeds(params));
+
+        if (res && res.data) {
+          setBedList(res.data.results);
+          console.log(res.data.results);
+        }
+        isBedLoading(false);
+      } else {
+        setBedList([]);
+        isBedLoading(false);
       }
-      isBedLoading(false);
     }, 300),
     []
   );
-
-  useEffect(() => {
-    onBedSearch("");
-  }, []);
 
   return (
     <AutoCompleteAsyncField
@@ -86,7 +91,11 @@ export const BedSelect = (props: BedSelectProps) => {
       onChange={(e: any, selected: any) => handleValueChange(selected)}
       loading={bedLoading}
       placeholder="Search by beds name"
-      noOptionsText="No beds found, please try again"
+      noOptionsText={
+        hasSearchText
+          ? "No beds found, please try again"
+          : "Start typing to begin search"
+      }
       renderOption={(option: any) => (
         <div>
           {`${option.name} (${

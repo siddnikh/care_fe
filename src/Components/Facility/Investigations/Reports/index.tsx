@@ -119,11 +119,7 @@ const InvestigationReports = ({ id }: any) => {
   } = state as InitialState;
 
   const fetchInvestigationsData = useCallback(
-    (
-      onSuccess: (data: any, pageNo: number) => void,
-      curPage = 1,
-      curSessionPage = 1
-    ) => {
+    (onSuccess: Function, curPage = 1, curSessionPage = 1) => {
       dispatch({
         type: "set_loading",
         payload: { ...isLoading, tableData: true },
@@ -148,14 +144,12 @@ const InvestigationReports = ({ id }: any) => {
         )
       ).then((res: any) => {
         if (res?.data?.results) {
-          onSuccess(res.data, curPage);
+          onSuccess(res.data);
           setPage(curPage + 1);
-          if (res.data.results.length !== 0 || curPage >= totalPage) {
-            dispatch({
-              type: "set_loading",
-              payload: { ...isLoading, tableData: false },
-            });
-          }
+          dispatch({
+            type: "set_loading",
+            payload: { ...isLoading, tableData: false },
+          });
         }
       });
     },
@@ -240,17 +234,12 @@ const InvestigationReports = ({ id }: any) => {
     fetchInvestigationGroups.current();
   }, []);
 
-  // eslint-disable-next-line
   const handleLoadMore = (e: any) => {
-    const onSuccess = (data: any, pageNo: number) => {
-      if (data.results.length === 0 && pageNo + 1 <= totalPage) {
-        fetchInvestigationsData(onSuccess, pageNo + 1, sessionPage);
-      } else {
-        dispatch({
-          type: "set_investigation_table_data",
-          payload: [...state.investigationTableData, ...data.results],
-        });
-      }
+    const onSuccess = (data: any) => {
+      dispatch({
+        type: "set_investigation_table_data",
+        payload: [...state.investigationTableData, ...data.results],
+      });
     };
 
     fetchInvestigationsData(onSuccess, page, sessionPage);
