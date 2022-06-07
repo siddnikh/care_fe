@@ -172,6 +172,10 @@ const routes: Routes = {
     path: "/api/v1/assetbed/{external_id}/",
     method: "GET",
   },
+  deleteAssetBed: {
+    path: "/api/v1/assetbed/{external_id}",
+    method: "DELETE",
+  },
   updateAssetBed: {
     path: "/api/v1/assetbed/{external_id}/",
     method: "PUT",

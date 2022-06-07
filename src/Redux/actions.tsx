@@ -155,7 +155,18 @@ export const partialUpdateAssetBed = (params: object, asset_id: string) =>
       external_id: asset_id,
     }
   );
-
+export const deleteAssetBed = (
+  params: object,
+  asset_external_id: string,
+  external_id: string,
+  bed_id: string
+) =>
+  fireRequest(
+    "deleteAssetBed",
+    [],
+    { ...params, asset: asset_external_id, bed: bed_id },
+    { external_id }
+  );
 export const updateAssetBed = (
   params: object,
   asset_external_id: string,
